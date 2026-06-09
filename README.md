@@ -1,3 +1,16 @@
+---
+title: Prompt Injection Detector
+emoji: 🛡️
+colorFrom: blue
+colorTo: red
+sdk: gradio
+sdk_version: 5.12.0
+python_version: '3.12'
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # Prompt Injection Detection with BERT/Transformers
 
 This project fine-tunes a Transformer sequence-classification model to detect whether an input prompt is **benign** or **malicious** for prompt-injection security screening.
