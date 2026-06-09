@@ -6,7 +6,7 @@ import os
 
 MODEL_PATH = "./model"
 
-# Load model (runs once when Space starts)
+
 print("Loading model...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=False)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
@@ -15,21 +15,21 @@ print("Model ready!")
 
 def detect_prompt(prompt, threshold):
     """Detect if a prompt is malicious"""
-    # Tokenize input
+   
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=128)
     
-    # Run inference
+   
     with torch.no_grad():
         outputs = model(**inputs)
         probabilities = F.softmax(outputs.logits, dim=-1)
     
-    # Get malicious probability (adjust index if needed)
+  
     malicious_prob = probabilities[0][1].item()
     benign_prob = probabilities[0][0].item()
     
     is_malicious = malicious_prob >= threshold
     
-    # Format response
+   
     if is_malicious:
         if malicious_prob > 0.90:
             risk = "🔴 CRITICAL"
