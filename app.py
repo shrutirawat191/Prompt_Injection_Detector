@@ -1,16 +1,13 @@
 import gradio as gr
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from transformers import pipeline
 import time
 import json
-import torch
-import torch.nn.functional as F
 import os
 
 MODEL_PATH = "./model"
 DEFAULT_THRESHOLD = 0.75
 
 print("Loading model...")
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=False)
 classifier = pipeline("text-classification", model=MODEL_PATH, tokenizer=MODEL_PATH, device=0)
 print("Model loaded!")
 
