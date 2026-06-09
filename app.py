@@ -1,5 +1,5 @@
 import gradio as gr
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import time
 import json
 import torch
