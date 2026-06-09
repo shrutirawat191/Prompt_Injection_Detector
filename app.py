@@ -5,7 +5,7 @@ import os
 from transformers import pipeline
 
 # Load model (same as before)
-MODEL_DIR = "/Prompt_Injection_Detector/model"
+MODEL_DIR = "model"
 DEFAULT_THRESHOLD = 0.75
 
 classifier = pipeline("text-classification", model=MODEL_DIR, tokenizer=MODEL_DIR, device=0)
