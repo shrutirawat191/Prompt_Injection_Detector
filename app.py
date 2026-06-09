@@ -11,7 +11,7 @@ DEFAULT_THRESHOLD = 0.75
 
 print("Loading model...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=False)
-classifier = pipeline("text-classification", model=MODEL_DIR, tokenizer=MODEL_DIR, device=0)
+classifier = pipeline("text-classification", model=MODEL_PATH, tokenizer=MODEL_PATH, device=0)
 print("Model loaded!")
 
 def detect_prompt(prompt, threshold):
