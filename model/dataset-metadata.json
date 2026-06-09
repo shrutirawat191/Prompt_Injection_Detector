@@ -1,0 +1,12 @@
+{
+  "title": "Prompt Injection Detector",
+  "subtitle": "Detects malicious prompts and injection attacks in LLM inputs",
+  "description": "BERT-based classifier that detects prompt injection attacks, instruction overrides, and system prompt extraction attempts. Labels: MALICIOUS vs BENIGN.",
+  "id": "raw503/prompt-injection-detector",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "isPrivate": true
+}
