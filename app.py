@@ -48,7 +48,44 @@ def download_model_from_kaggle():
         print(f"Error downloading from Kaggle: {e}")
         print("Trying alternative download method...")
         return download_alternative()
+def download_alternative():
+    """Alternative download method using Kaggle API"""
+    import subprocess
+    
+    try:
+        # Ensure kagglehub is installed
+        subprocess.run(["pip", "install", "kagglehub"], check=True)
+        
+        # Alternative: Use kaggle CLI if available
+        if os.path.exists(os.path.expanduser("~/.kaggle/kaggle.json")):
+            model_name_parts = KAGGLE_MODEL.split("/")
+            if len(model_name_parts) == 2:
+                username, model = model_name_parts
+                download_path = f"./models/{model}"
+                os.makedirs(download_path, exist_ok=True)
+                
+                cmd = [
+                    "kaggle", "models", "download",
+                    f"{username}/{model}",
+                    "--path", download_path,
+                    "--version", KAGGLE_MODEL_VERSION if KAGGLE_MODEL_VERSION != "latest" else ""
+                ]
+                subprocess.run(cmd, check=True)
+                return download_path
+        
+        raise Exception("Kaggle authentication not found")
+        
+    except Exception as e:
+        print(f"Alternative download failed: {e}")
+        print("Please ensure you have:")
+        print("1. Installed kagglehub: pip install kagglehub")
+        print("2. Set up Kaggle credentials")
+        print("3. Correct model path format: 'username/model-name'")
+        raise
 
+
+MODEL_PATH = download_model_from_kaggle()
+print(f"Model loaded from: {MODEL_PATH}")
 DEFAULT_THRESHOLD = 0.75
 
 print("Loading model into memory...")
