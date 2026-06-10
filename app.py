@@ -16,7 +16,7 @@ except ImportError:
     from kagglehub import model_download
 
 # Model configuration
-KAGGLE_MODEL = "raw503/prompt-injection-detect" 
+KAGGLE_MODEL = "www.kaggle.com/datasets/raw503/prompt-injection-detect/data" 
 KAGGLE_MODEL_VERSION = "latest"
 
 def download_model_from_kaggle():
