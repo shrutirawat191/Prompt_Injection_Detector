@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+import torch
 
 # Install kagglehub if not present
 try:
@@ -202,6 +203,6 @@ with gr.Blocks(title="Prompt Injection Detector", theme=gr.themes.Soft()) as dem
     )
 
 # Add torch import at top
-import torch
+
 
 demo.launch(server_name="0.0.0.0", server_port=7860, share=True)
