@@ -389,11 +389,11 @@ def train_transformer_model(
     output_dir=os.path.join(output_dir, "results"),
     num_train_epochs=num_epochs,
     learning_rate=learning_rate,
-    per_device_train_batch_size=batch_size,  # 4
-    per_device_eval_batch_size=batch_size * 2,  # 8 for eval
-    gradient_accumulation_steps=4,  # Increased to maintain effective batch size
+    per_device_train_batch_size=batch_size,  
+    per_device_eval_batch_size=batch_size * 2, 
+    gradient_accumulation_steps=4,  
     weight_decay=0.01,
-    logging_steps=50,  # Less frequent logging
+    logging_steps=50,  
     eval_strategy="epoch",
     save_strategy="epoch",
     load_best_model_at_end=True,
@@ -407,7 +407,7 @@ def train_transformer_model(
     fp16_full_eval=False,
     bf16_full_eval=False,
     # Memory optimizations
-    gradient_checkpointing=True,  # New in Transformers 4.20+
+    gradient_checkpointing=True, 
 )
 
     trainer = WeightedTrainer(
