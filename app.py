@@ -3,7 +3,7 @@ import time
 from transformers import pipeline
 
 MODEL_DIR = "model"
-DEFAULT_THRESHOLD = 0.75
+DEFAULT_THRESHOLD = 0.5
 
 classifier = pipeline(
     "text-classification",
@@ -81,11 +81,11 @@ with gr.Blocks(title="Prompt Injection Detector", theme=gr.themes.Soft()) as dem
             )
             
             threshold_slider = gr.Slider(
-                minimum=0.5,
-                maximum=0.95,
-                value=0.75,
+                minimum=0.1,
+                maximum=0.75,
+                value=0.5,
                 step=0.01,
-                label="Detection Threshold (higher = stricter)"
+                label="Detection Threshold"
             )
             
             detect_btn = gr.Button("🔍 Detect", variant="primary", size="lg")
