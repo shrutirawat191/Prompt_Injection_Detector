@@ -11,6 +11,21 @@ pinned: false
 license: mit
 ---
 
+  
+  # 🛡️ Prompt Injection Detection System
+
+<div align="center">
+
+
+[![Live Demo](https://img.shields.io/badge/▶️-Live_Demo-00aaff?style=for-the-badge&logo=gradio&logoColor=white)](https://raw503-prompt-injection-detector.hf.space)
+
+
+</div>
+
+> ### ✨ **Try the live demo instantly** - No installation required! [Click here](https://raw503-prompt-injection-detector.hf.space)
+
+
+
 # Prompt Injection Detection with BERT/Transformers
 
 This project fine-tunes a Transformer sequence-classification model to detect whether an input prompt is **benign** or **malicious** for prompt-injection security screening.
