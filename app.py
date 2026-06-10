@@ -14,7 +14,7 @@ def detect_prompt(prompt, threshold):
     raw_result = classifier(prompt)
     inference_time = (time.time() - start_time) * 1000
     
-    # Parse results
+   
     scores = {}
     if isinstance(raw_result, list) and len(raw_result) > 0:
         if isinstance(raw_result[0], dict):
@@ -24,7 +24,7 @@ def detect_prompt(prompt, threshold):
     benign_prob = scores.get('BENIGN', 1 - malicious_prob)
     is_malicious = malicious_prob >= threshold
     
-    # Risk assessment
+    
     if is_malicious:
         if malicious_prob > 0.90:
             risk = "🔴 CRITICAL"
@@ -38,7 +38,7 @@ def detect_prompt(prompt, threshold):
     else:
         if malicious_prob < 0.25:
             risk = "🟢 LOW"
-        elif malicious_prob < 0.50:
+        elif malicious_prob < 0.80:
             risk = "🟡 MEDIUM"
         else:
             risk = "🟠 HIGH"
@@ -54,7 +54,7 @@ def detect_prompt(prompt, threshold):
         "Inference Time": f"{inference_time:.2f} ms"
     }
 
-# Create Gradio interface
+
 with gr.Blocks(title="Prompt Injection Detector", theme=gr.themes.Soft()) as demo:
     gr.Markdown("""
     # 🛡️ Prompt Injection Detection System
