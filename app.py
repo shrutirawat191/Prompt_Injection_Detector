@@ -1,160 +1,66 @@
 import gradio as gr
-from transformers import pipeline
 import time
-import json
-import os
-import subprocess
-import sys
-import torch
+from transformers import pipeline
 
-# Install kagglehub if not present
-try:
-    from kagglehub import model_download
-except ImportError:
-    print("Installing kagglehub...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "kagglehub"])
-    from kagglehub import model_download
-
-# Model configuration
-KAGGLE_MODEL = "https://api.kaggle.com/datasets/raw503/prompt-injection-detect"  # Change this to your Kaggle model path
-KAGGLE_MODEL_VERSION = "latest"
-
-def download_model_from_kaggle():
-    """Download model from Kaggle"""
-    print(f"Downloading model from Kaggle: {KAGGLE_MODEL}...")
-    
-    try:
-        # Download the model
-        model_path = model_download(
-            f"models/{KAGGLE_MODEL}",
-            path=KAGGLE_MODEL_VERSION
-        )
-        
-        print(f"Model downloaded to: {model_path}")
-        
-        # Find the actual model directory
-        for root, dirs, files in os.walk(model_path):
-            if "pytorch_model.bin" in files or "model.safetensors" in files or "config.json" in files:
-                return root
-        
-        return model_path
-        
-    except Exception as e:
-        print(f"Error downloading from Kaggle: {e}")
-        return None
-
-# Try to download model
-MODEL_PATH = download_model_from_kaggle()
-
-if MODEL_PATH is None:
-    print("Failed to download from Kaggle. Using local model path or fallback.")
-    # Option: Use a local model if available
-    LOCAL_MODEL_PATH = "./model"
-    if os.path.exists(LOCAL_MODEL_PATH):
-        MODEL_PATH = LOCAL_MODEL_PATH
-        print(f"Using local model from: {MODEL_PATH}")
-    else:
-        # Option: Download from Hugging Face as fallback
-        print("Downloading fallback model from Hugging Face...")
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer
-        MODEL_NAME = "protectai/deberta-v3-base-prompt-injection"  # Free prompt injection model
-        MODEL_PATH = MODEL_NAME
-        print(f"Using Hugging Face model: {MODEL_NAME}")
-
+MODEL_DIR = "model"
 DEFAULT_THRESHOLD = 0.75
 
-print("Loading model...")
-try:
-    classifier = pipeline(
-        "text-classification", 
-        model=MODEL_PATH, 
-        tokenizer=MODEL_PATH, 
-        device=0 if torch.cuda.is_available() else -1
-    )
-    print("Model loaded successfully!")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    print("Loading fallback model...")
-    # Fallback to a known prompt injection detection model
-    classifier = pipeline(
-        "text-classification", 
-        model="protectai/deberta-v3-base-prompt-injection",
-        device=0 if torch.cuda.is_available() else -1
-    )
+classifier = pipeline(
+    "text-classification",
+    model=MODEL_DIR,
+    tokenizer=MODEL_DIR,
+    device=0,
+    top_k=None
+)
 
 def detect_prompt(prompt, threshold):
     start_time = time.time()
-    
-    if not prompt or prompt.strip() == "":
-        return {
-            "Error": "Empty prompt provided",
-            "Prediction": "❌ INVALID INPUT"
-        }
-    
-    try:
-        raw_result = classifier(prompt[:512])
-        inference_time = (time.time() - start_time) * 1000
-        
-        # Parse results (adjust based on your model's output)
-        scores = {}
-        if isinstance(raw_result, list) and len(raw_result) > 0:
-            if isinstance(raw_result[0], dict):
-                scores = {item['label']: item['score'] for item in raw_result}
-        
-        # Handle different label formats
-        malicious_prob = 0.5
-        benign_prob = 0.5
-        
-        for label, score in scores.items():
-            label_lower = label.lower()
-            if 'injection' in label_lower or 'malicious' in label_lower or 'attack' in label_lower:
-                malicious_prob = score
-            elif 'benign' in label_lower or 'safe' in label_lower:
-                benign_prob = score
-        
-        # If only one score is returned (binary classification)
-        if len(scores) == 1 and 'LABEL' in list(scores.keys())[0]:
-            # Assume LABEL_1 is malicious
-            if 'LABEL_1' in scores:
-                malicious_prob = scores['LABEL_1']
-                benign_prob = 1 - malicious_prob
-        
-        is_malicious = malicious_prob >= threshold
-        
-        # Risk assessment
-        if is_malicious:
-            if malicious_prob > 0.90:
-                risk = "🔴 CRITICAL"
-                recommendation = "🚫 BLOCK IMMEDIATELY"
-            elif malicious_prob > 0.75:
-                risk = "🟠 HIGH"
-                recommendation = "⚠️ BLOCK"
-            else:
-                risk = "🟡 MEDIUM"
-                recommendation = "🔍 REVIEW"
+    raw_result = classifier(prompt)
+    inference_time = (time.time() - start_time) * 1000
+
+    # Normalize possible pipeline outputs
+    if isinstance(raw_result, list) and len(raw_result) > 0 and isinstance(raw_result[0], list):
+        items = raw_result[0]
+    elif isinstance(raw_result, list):
+        items = raw_result
+    else:
+        items = [raw_result]
+
+    scores = {item["label"].upper(): float(item["score"]) for item in items if isinstance(item, dict)}
+
+    malicious_prob = scores.get("MALICIOUS", 0.0)
+    benign_prob = scores.get("BENIGN", 1.0 - malicious_prob)
+    is_malicious = malicious_prob >= threshold
+
+    if is_malicious:
+        if malicious_prob > 0.90:
+            risk = "🔴 CRITICAL"
+            recommendation = "🚫 BLOCK IMMEDIATELY"
+        elif malicious_prob > 0.75:
+            risk = "🟠 HIGH"
+            recommendation = "⚠️ BLOCK"
         else:
-            if malicious_prob < 0.25:
-                risk = "🟢 LOW"
-            elif malicious_prob < 0.50:
-                risk = "🟡 MEDIUM"
-            else:
-                risk = "🟠 HIGH"
-            recommendation = "✅ ALLOW"
-        
-        return {
-            "Prediction": "🚨 MALICIOUS" if is_malicious else "✅ BENIGN",
-            "Malicious Score": f"{malicious_prob:.3f}",
-            "Benign Score": f"{benign_prob:.3f}",
-            "Risk Level": risk,
-            "Recommendation": recommendation,
-            "Threshold Used": f"{threshold:.2f}",
-            "Inference Time": f"{inference_time:.2f} ms"
-        }
-    except Exception as e:
-        return {
-            "Error": str(e),
-            "Prediction": "❌ DETECTION FAILED"
-        }
+            risk = "🟡 MEDIUM"
+            recommendation = "🔍 REVIEW"
+    else:
+        if malicious_prob < 0.25:
+            risk = "🟢 LOW"
+        elif malicious_prob < 0.50:
+            risk = "🟡 MEDIUM"
+        else:
+            risk = "🟠 HIGH"
+        recommendation = "✅ ALLOW"
+
+    return {
+        "Raw Result": raw_result,
+        "Prediction": "🚨 MALICIOUS" if is_malicious else "✅ BENIGN",
+        "Malicious Score": f"{malicious_prob:.3f}",
+        "Benign Score": f"{benign_prob:.3f}",
+        "Risk Level": risk,
+        "Recommendation": recommendation,
+        "Threshold Used": f"{threshold:.2f}",
+        "Inference Time": f"{inference_time:.2f} ms"
+    }
 
 # Create Gradio interface
 with gr.Blocks(title="Prompt Injection Detector", theme=gr.themes.Soft()) as demo:
