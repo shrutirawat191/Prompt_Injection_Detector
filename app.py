@@ -32,24 +32,18 @@ def detect_prompt(prompt, threshold):
     benign_prob = scores.get("BENIGN", 1.0 - malicious_prob)
     is_malicious = malicious_prob >= threshold
 
-    if is_malicious:
-        if malicious_prob > 0.90:
-            risk = "🔴 CRITICAL"
-            recommendation = "🚫 BLOCK IMMEDIATELY"
-        elif malicious_prob > 0.75:
-            risk = "🟠 HIGH"
-            recommendation = "⚠️ BLOCK"
-        else:
-            risk = "🟡 MEDIUM"
-            recommendation = "🔍 REVIEW"
+    if malicious_prob >= 0.75:
+    prediction = "🚨 MALICIOUS"
+    risk = "🟠 HIGH" if malicious_prob <= 0.90 else "🔴 CRITICAL"
+    recommendation = "⚠️ BLOCK" if malicious_prob <= 0.90 else "🚫 BLOCK IMMEDIATELY"
+    elif malicious_prob >= 0.50:
+    prediction = "⚠️ SUSPICIOUS"
+    risk = "🟡 MEDIUM"
+    recommendation = "🔍 REVIEW"
     else:
-        if malicious_prob < 0.25:
-            risk = "🟢 LOW"
-        elif malicious_prob < 0.50:
-            risk = "🟡 MEDIUM"
-        else:
-            risk = "🟠 HIGH"
-        recommendation = "✅ ALLOW"
+    prediction = "✅ BENIGN"
+    risk = "🟢 LOW" if malicious_prob < 0.25 else "🟡 MEDIUM"
+    recommendation = "✅ ALLOW"
 
     return {
         "Raw Result": raw_result,
