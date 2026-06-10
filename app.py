@@ -190,7 +190,7 @@ with gr.Blocks(title="Prompt Injection Detector", theme=gr.themes.Soft()) as dem
         outputs=output_json
     )
     
-    gr.Markdown(f"""
+    gr.Markdown("""
     ---
     ### 🎯 Model Details
     - **Source**: Kaggle (`{KAGGLE_MODEL}`)
@@ -210,7 +210,7 @@ with gr.Blocks(title="Prompt Injection Detector", theme=gr.themes.Soft()) as dem
     - Accuracy: ~90% (varies by dataset)
     - Built with fine-tuned transformer models
     - Trained on diverse prompt injection techniques
-    
-    ### 🔧 Setup Requirements
-    ```bash
-    pip install kagglehub gradio transformers torch
+   """)
+
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", share=True) 
